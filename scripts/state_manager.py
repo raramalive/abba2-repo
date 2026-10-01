@@ -7,7 +7,8 @@ import json
 import re
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).parent.parent
+# Always resolve relative to THIS file — safe regardless of cwd
+REPO_ROOT = Path(__file__).resolve().parent.parent
 STATE_DIR = REPO_ROOT / "state"
 
 # State file paths
