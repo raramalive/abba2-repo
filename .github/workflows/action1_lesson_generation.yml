@@ -33,8 +33,22 @@ jobs:
           python-version: "3.11"
 
       - name: Install Python dependencies
+        run: pip install requests
+
+      - name: Verify repo structure
         run: |
-          pip install requests
+          echo "=== Working directory ==="
+          pwd
+          echo "=== Repo root contents ==="
+          ls -la
+          echo "=== secrets/ contents ==="
+          ls -la secrets/
+          echo "=== state/ contents ==="
+          ls -la state/
+          echo "=== prompts/ contents ==="
+          ls -la prompts/
+          echo "=== scripts/ contents ==="
+          ls -la scripts/
 
       - name: Force clear current lesson (if requested)
         if: ${{ github.event.inputs.force_regenerate == 'true' }}
@@ -45,7 +59,8 @@ jobs:
       - name: Check current lesson state
         id: check_state
         run: |
-          if [ -s state/current_lesson.txt ] && [ "$(cat state/current_lesson.txt | tr -d '[:space:]')" != "" ]; then
+          if [ -s state/current_lesson.txt ] && \
+             [ "$(cat state/current_lesson.txt | tr -d '[:space:]')" != "" ]; then
             echo "lesson_exists=true" >> $GITHUB_OUTPUT
             echo "Current lesson file is NOT empty — skipping generation."
           else
@@ -56,10 +71,14 @@ jobs:
       - name: Generate lesson via v0.app
         if: steps.check_state.outputs.lesson_exists == 'false'
         run: |
-          cd scripts
-          python action1_generate_lesson.py
+          cd "$GITHUB_WORKSPACE"
+          python scripts/action1_generate_lesson.py
         env:
           PYTHONPATH: "${{ github.workspace }}/scripts"
+
+      - name: Show generated lesson (first 100 lines)
+        if: steps.check_state.outputs.lesson_exists == 'false'
+        run: head -100 state/current_lesson.txt || true
 
       - name: Commit lesson to repository
         if: steps.check_state.outputs.lesson_exists == 'false'
@@ -77,7 +96,6 @@ jobs:
       - name: Summary
         run: |
           echo "## ABBA2 Action 1 Complete" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          LESSON_SIZE=$(wc -c < state/current_lesson.txt || echo 0)
+          LESSON_SIZE=$(wc -c < state/current_lesson.txt 2>/dev/null || echo 0)
           echo "- Lesson file size: ${LESSON_SIZE} bytes" >> $GITHUB_STEP_SUMMARY
           echo "- Next step: Run **Action 2 — Generate Code** workflow" >> $GITHUB_STEP_SUMMARY
