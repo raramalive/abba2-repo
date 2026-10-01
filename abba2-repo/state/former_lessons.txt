@@ -1,6 +1,0 @@
-# ABBA 2 — Former Lessons Archive
-# This file contains all lessons that have been completed and produced as videos.
-# New lesson generation must NOT repeat any topic covered here.
-# Format: Each lesson is wrapped in ====LESSON START==== ... ====LESSON END====
-
-# [No lessons completed yet — this is the beginning of the curriculum]
